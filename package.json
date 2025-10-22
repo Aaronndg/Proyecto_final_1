@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "setup": "node scripts/setup.js",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "vercel-build": "next build"
   },
   "dependencies": {
     "@supabase/ssr": "^0.1.0",
