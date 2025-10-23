@@ -1,10 +1,14 @@
-import OpenAI from 'openai'
 import { SearchResult } from './rag-service'
 
-const openai = new OpenAI({
-  apiKey: process.env.DEEPSEEK_API_KEY || process.env.OPENAI_API_KEY,
-  baseURL: process.env.DEEPSEEK_API_KEY ? 'https://api.deepseek.com' : undefined,
-})
+// Conditional OpenAI client initialization
+let openai: any = null
+if (process.env.DEEPSEEK_API_KEY || process.env.OPENAI_API_KEY) {
+  const OpenAI = require('openai')
+  openai = new OpenAI({
+    apiKey: process.env.DEEPSEEK_API_KEY || process.env.OPENAI_API_KEY,
+    baseURL: process.env.DEEPSEEK_API_KEY ? 'https://api.deepseek.com' : undefined,
+  })
+}
 
 export interface AIResponseData {
   content: string
@@ -95,7 +99,7 @@ function analyzeRiskLevel(userInput: string): 'low' | 'medium' | 'high' | 'crisi
 }
 
 /**
- * Generate empathetic response using AI
+ * Generate empathetic response using AI (fallback to rule-based if no API)
  */
 export async function generateEmpatheticResponse(
   userMessage: string,
@@ -105,6 +109,18 @@ export async function generateEmpatheticResponse(
 ): Promise<AIResponseData> {
   try {
     const riskLevel = analyzeRiskLevel(userMessage)
+    
+    // If no AI client available, use fallback
+    if (!openai) {
+      console.log('AI client not available, using fallback response')
+      return {
+        content: getFallbackResponse(riskLevel),
+        emotionDetected: detectEmotion(userMessage),
+        riskLevel,
+        suggestedActions: generateSuggestedActions(riskLevel, userMessage),
+        relevantResources,
+      }
+    }
     
     // Build context from relevant resources
     let resourceContext = ''
@@ -158,8 +174,10 @@ export async function generateEmpatheticResponse(
     const fallbackRiskLevel = analyzeRiskLevel(userMessage)
     return {
       content: getFallbackResponse(fallbackRiskLevel),
+      emotionDetected: detectEmotion(userMessage),
       riskLevel: fallbackRiskLevel,
       suggestedActions: generateSuggestedActions(fallbackRiskLevel, userMessage),
+      relevantResources,
     }
   }
 }
