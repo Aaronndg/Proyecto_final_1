@@ -1,0 +1,5 @@
+# Archivos ignorados por Vercel
+.env.local
+.next/
+node_modules/
+*.log
