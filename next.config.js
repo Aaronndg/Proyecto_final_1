@@ -1,7 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  output: 'standalone',
-  serverExternalPackages: ['@supabase/ssr']
+  serverExternalPackages: ['@supabase/ssr'],
+  experimental: {
+    serverComponentsExternalPackages: ['@supabase/ssr']
+  }
 }
 
 module.exports = nextConfig
